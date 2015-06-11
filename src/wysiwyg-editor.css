@@ -148,6 +148,9 @@
     -o-border-radius: 5px;
     border-radius: 5px;
 }
+.wysiwyg-toolbar-icon-disabled.wysiwyg-toolbar-icon {
+    color: #cccccc;
+}
 .wysiwyg-toolbar-color {
     width: 12px;
     height: 12px;
