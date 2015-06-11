@@ -52,8 +52,9 @@ $(element).wysiwyg({
         buttonname: {
             title: 'tooltip text',
             // How should the button look like?
-            image: '\u1234' | '&lt;img src="path/to/image.jpg"&gt;',
-            html: '&lt;raw html&gt;',
+            classes: 'shiny',
+            image: '\u1234' | '<img src="path/to/image.jpg">',
+            html: '<raw html>',
             // What should the button do?
             popup: function( $popup, $button ) { ... },
             click: function( $button ) { ... },
@@ -86,7 +87,7 @@ $(element).wysiwyg({
     submit: { ... },
     selectImage: 'Click or drop image',
     placeholderUrl: 'www.example.com',
-    placeholderEmbed: '&lt;embed/&gt;',
+    placeholderEmbed: '<embed/>',
     maxImageSize: [600,200],
     onKeyDown: function( key, character, shiftKey, altKey, ctrlKey, metaKey ) { ... },
     onKeyPress: function( key, character, shiftKey, altKey, ctrlKey, metaKey ) { ... },
@@ -103,7 +104,7 @@ $(element).wysiwyg('container');
 // accessing 'wysiwyg.js':
 $(element).wysiwyg('shell').bold();
 $(element).wysiwyg('shell').forecolor( '#ff0000' );
-$(element).wysiwyg('shell').insertHTML( '&lt;b&gt;some text&lt;/b&gt;' );
+$(element).wysiwyg('shell').insertHTML( '<b>some text</b>' );
 ````
 
 wysiwyg.js-API:
