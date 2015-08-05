@@ -1853,11 +1853,25 @@
 
         // Create the toolbar
         var toolbar_button = function( button ) {
-            return $('<a/>').addClass( 'wysiwyg-toolbar-icon' )
+            return $('<a/>').addClass( 'wysiwyg-toolbar-icon ' + (button.classes || '') )
                             .attr('href','#')
                             .attr('title', button.title)
                             .attr('unselectable','on')
-                            .append(button.image);
+                            .append(button.image)
+                            .on('wysiwyg-toolbar-icon-disable', function() {
+                                if (button.hotkey) {
+                                    hotkeysDisabled[button.hotkey] = true;
+                                }
+                                $(this).addClass('wysiwyg-toolbar-icon-disabled');
+                            })
+                            .on('wysiwyg-toolbar-icon-enable', function() {
+                                if (button.hotkey) {
+                                    hotkeysDisabled[button.hotkey] = false;
+                                }
+                                $(this).removeClass('wysiwyg-toolbar-icon-disabled');
+                            })
+                            // Disable dragging (as in drag and drop) of buttons.
+                            .on('dragstart', function() { return false; });
         };
         var add_buttons_to_toolbar = function( $toolbar, selection, popup_open_callback, popup_position_callback )
         {
@@ -1893,10 +1907,15 @@
                 var $button;
                 if( toolbar_handler )
                     $button = toolbar_button( value ).click( function(event) {
-                        toolbar_handler( event.currentTarget );
-                        // Give the focus back to the editor. Technically not necessary
-                        if( get_toolbar_handler(key) ) // only if not a popup-handler
-                            wysiwygeditor.getElement().focus();
+                        // Only handle clicks if the button isn't disabled.
+                        if( ! $(this).hasClass( 'wysiwyg-toolbar-icon-disabled' ) ) {
+                            toolbar_handler( event.currentTarget );
+                            // Give the focus back to the editor if not a popup handler.
+                            // Technically not necessary.
+                            if( get_toolbar_handler(key) ) {
+                                wysiwygeditor.getElement().focus();
+                            }
+                        }
                         event.stopPropagation();
                         event.preventDefault();
                         return false;
@@ -1956,6 +1975,7 @@
 
         // Transform the textarea to contenteditable
         var hotkeys = {},
+            hotkeysDisabled = {},
             autocomplete = null;
         var create_wysiwyg = function( $textarea, $container, $parent, placeholder )
         {
@@ -2019,7 +2039,7 @@
                         if( character && !shiftKey && !altKey && ctrlKey && !metaKey )
                         {
                             var hotkey = character.toLowerCase();
-                            if( ! hotkeys[hotkey] )
+                            if( !hotkeys[hotkey] || hotkeysDisabled[hotkey] )
                                 return ;
                             hotkeys[hotkey]();
                             return false; // prevent default
