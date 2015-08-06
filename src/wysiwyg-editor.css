@@ -30,6 +30,13 @@
 .wysiwyg-wrapper {
     position: relative;
 }
+.wysiwyg-container textarea {
+    border: none;
+    background-color: transparent;
+    font-size: inherit;
+    font-family: Courier New, Consolas, monospace;
+}
+.wysiwyg-container textarea,
 .wysiwyg-editor {
     position: relative;
     min-height: 1em;

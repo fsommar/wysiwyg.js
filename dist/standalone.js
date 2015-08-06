@@ -181,28 +181,6 @@
                         };
                 }
             }
-            /*
-            // Fall back to inserting a temporary element (only for Firefox 3.5 and 3.6)
-            var span = document.createElement('span');
-            if( span.getBoundingClientRect )
-            {
-                // Ensure span has dimensions and position by
-                // adding a zero-width space character
-                span.appendChild( document.createTextNode('\u200b') );
-                range.insertNode( span );
-                var rect = span.getBoundingClientRect();
-                var spanParent = span.parentNode;
-                spanParent.removeChild( span );
-                // Glue any broken text nodes back together
-                spanParent.normalize();
-                return {
-                    left: parseInt(rect.left),
-                    top: parseInt(rect.top),
-                    width: parseInt(rect.right - rect.left),
-                    height: parseInt(rect.bottom - rect.top)
-                };
-            }
-            */
         }
         else if( document.selection )
         {
@@ -504,80 +482,6 @@
         }
         return true;
     };
-
-    /*
-    var clipSelectionTo = function( containerNode )
-    {
-        if( window.getSelection && containerNode.compareDocumentPosition )
-        {
-            var sel = window.getSelection();
-            var left_node = sel.anchorNode,
-                left_offset = sel.anchorOffset,
-                right_node = sel.focusNode,
-                right_offset = sel.focusOffset;
-            // http://stackoverflow.com/questions/10710733/dom-determine-if-the-anchornode-or-focusnode-is-on-the-left-side
-            if( (left_node == right_node && left_offset > right_offset) ||
-                (left_node.compareDocumentPosition(right_node) & Node.DOCUMENT_POSITION_PRECEDING) )
-            {
-                // Right-to-left selection
-                left_node = sel.focusNode;
-                left_offset = sel.focusOffset;
-                right_node = sel.anchorNode,
-                right_offset = sel.anchorOffset;
-            }
-            // Speed up: selection inside editor
-            var left_inside = isOrContainsNode(containerNode,left_node),
-                right_inside = isOrContainsNode(containerNode,right_node);
-            if( left_inside && right_inside )
-                return true;
-            // Selection before/after container?
-            if( ! left_inside && containerNode.compareDocumentPosition(left_node) & Node.DOCUMENT_POSITION_FOLLOWING )
-                return false; // selection after
-            if( ! right_inside && containerNode.compareDocumentPosition(right_node) & Node.DOCUMENT_POSITION_PRECEDING )
-                return false; // selection before
-            // Selection partly before/after container
-            // http://stackoverflow.com/questions/12243898/how-to-select-all-text-in-contenteditable-div
-            var range = document.createRange();
-            range.selectNodeContents( containerNode );
-            if( left_inside )
-                range.setStart( left_node, left_offset );
-            if( right_inside )
-                range.setEnd( right_node, right_offset );
-            sel.removeAllRanges();
-            sel.addRange(range);
-            return true;
-        }
-        else if( document.selection )
-        {
-            var sel = document.selection;
-            if( sel.type == 'Text' )
-            {
-                // Range of container
-                // http://stackoverflow.com/questions/12243898/how-to-select-all-text-in-contenteditable-div
-                var rangeContainer = document.body.createTextRange();
-                rangeContainer.moveToElementText(containerNode);
-                // Compare with selection range
-                var range = sel.createRange();
-                if( rangeContainer.inRange(range) )
-                    return true;
-                // Selection before/after container?
-                if( rangeContainer.compareEndPoints('StartToEnd',range) > 0 )
-                    return false;
-                if( rangeContainer.compareEndPoints('EndToStart',range) < 0 )
-                    return false;
-                // Selection partly before/after container
-                if( rangeContainer.compareEndPoints('StartToStart',range) > 0 )
-                    range.setEndPoint('StartToStart',rangeContainer);
-                if( rangeContainer.compareEndPoints('EndToEnd',range) < 0 )
-                    range.setEndPoint('EndToEnd',rangeContainer);
-                // select range
-                range.select();
-                return true;
-            }
-        }
-        return true;
-    };
-    */
 
     // http://stackoverflow.com/questions/6690752/insert-html-at-caret-in-a-contenteditable-div/6691294#6691294
     // http://stackoverflow.com/questions/4823691/insert-an-html-element-in-a-contenteditable-element
@@ -1847,6 +1751,47 @@
                     return function() {
                         wysiwygeditor.removeFormat().closePopup().collapseSelection();
                     };
+                case 'code':
+                    var $wysiwyg = $(wysiwygeditor.getElement());
+                    $textarea.addClass('wysiwyg-editor');
+                    return function(target) {
+                        var $this = $(target);
+                        var wysiwygHtml = $wysiwyg.html();
+                        var textAreaContent = $textarea.val();
+                        var $container = $textarea.closest('.wysiwyg-container');
+                        // If the current mode is code, the click on 'code' represents
+                        // a switch to the wysiwyg mode.
+                        if ($this.data('isCodeMode')) {
+                            $container.removeClass('wysiwyg-code-mode');
+                            if (wysiwygHtml !== textAreaContent) {
+                                $wysiwyg.html($textarea.val());
+                            }
+                            $textarea.off('focus blur');
+                            $textarea.hide();
+                            $wysiwyg.show().focus();
+                            $this.siblings('.wysiwyg-toolbar-icon').trigger('wysiwyg-toolbar-icon-enable');
+                        } else {
+                            $container.addClass('wysiwyg-code-mode');
+                            // Update textarea to be of same dimensions as contenteditable (wysiwyg).
+                            $textarea.height($wysiwyg.height())
+                                .width($wysiwyg.width())
+                                .css('max-width', $wysiwyg.width());
+                            // Trigger a focus and blur events without actually focusing or blurring the element.
+                            $textarea.on('focus', function() { $wysiwyg.triggerHandler('focus'); });
+                            $textarea.on('blur', function() { $wysiwyg.triggerHandler('blur'); });
+
+                            // The wysiwyg field always updates the textarea meaning
+                            // it doesn't need to be updated here.
+                            $wysiwyg.hide();
+                            // If a placeholder is supplied and the code switch is done with
+                            // no content the placeholder will cover the textarea unless it's hidden.
+                            $container.find('.wysiwyg-placeholder').hide();
+                            $textarea.show().focus();
+                            $this.siblings('.wysiwyg-toolbar-icon').trigger('wysiwyg-toolbar-icon-disable');
+                        }
+                        // Toggle indicated mode
+                        $this.data('isCodeMode', !$this.data('isCodeMode'));
+                    };
             }
             return null;
         }
@@ -1859,12 +1804,18 @@
                             .attr('unselectable','on')
                             .append(button.image)
                             .on('wysiwyg-toolbar-icon-disable', function() {
+                                if ($(this).hasClass('wysiwyg-always-enabled')) {
+                                    return;
+                                }
                                 if (button.hotkey) {
                                     hotkeysDisabled[button.hotkey] = true;
                                 }
                                 $(this).addClass('wysiwyg-toolbar-icon-disabled');
                             })
                             .on('wysiwyg-toolbar-icon-enable', function() {
+                                if ($(this).hasClass('wysiwyg-always-enabled')) {
+                                    return;
+                                }
                                 if (button.hotkey) {
                                     hotkeysDisabled[button.hotkey] = false;
                                 }

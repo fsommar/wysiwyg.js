@@ -415,6 +415,47 @@
                     return function() {
                         wysiwygeditor.removeFormat().closePopup().collapseSelection();
                     };
+                case 'code':
+                    var $wysiwyg = $(wysiwygeditor.getElement());
+                    $textarea.addClass('wysiwyg-editor');
+                    return function(target) {
+                        var $this = $(target);
+                        var wysiwygHtml = $wysiwyg.html();
+                        var textAreaContent = $textarea.val();
+                        var $container = $textarea.closest('.wysiwyg-container');
+                        // If the current mode is code, the click on 'code' represents
+                        // a switch to the wysiwyg mode.
+                        if ($this.data('isCodeMode')) {
+                            $container.removeClass('wysiwyg-code-mode');
+                            if (wysiwygHtml !== textAreaContent) {
+                                $wysiwyg.html($textarea.val());
+                            }
+                            $textarea.off('focus blur');
+                            $textarea.hide();
+                            $wysiwyg.show().focus();
+                            $this.siblings('.wysiwyg-toolbar-icon').trigger('wysiwyg-toolbar-icon-enable');
+                        } else {
+                            $container.addClass('wysiwyg-code-mode');
+                            // Update textarea to be of same dimensions as contenteditable (wysiwyg).
+                            $textarea.height($wysiwyg.height())
+                                .width($wysiwyg.width())
+                                .css('max-width', $wysiwyg.width());
+                            // Trigger a focus and blur events without actually focusing or blurring the element.
+                            $textarea.on('focus', function() { $wysiwyg.triggerHandler('focus'); });
+                            $textarea.on('blur', function() { $wysiwyg.triggerHandler('blur'); });
+
+                            // The wysiwyg field always updates the textarea meaning
+                            // it doesn't need to be updated here.
+                            $wysiwyg.hide();
+                            // If a placeholder is supplied and the code switch is done with
+                            // no content the placeholder will cover the textarea unless it's hidden.
+                            $container.find('.wysiwyg-placeholder').hide();
+                            $textarea.show().focus();
+                            $this.siblings('.wysiwyg-toolbar-icon').trigger('wysiwyg-toolbar-icon-disable');
+                        }
+                        // Toggle indicated mode
+                        $this.data('isCodeMode', !$this.data('isCodeMode'));
+                    };
             }
             return null;
         }
@@ -427,12 +468,18 @@
                             .attr('unselectable','on')
                             .append(button.image)
                             .on('wysiwyg-toolbar-icon-disable', function() {
+                                if ($(this).hasClass('wysiwyg-always-enabled')) {
+                                    return;
+                                }
                                 if (button.hotkey) {
                                     hotkeysDisabled[button.hotkey] = true;
                                 }
                                 $(this).addClass('wysiwyg-toolbar-icon-disabled');
                             })
                             .on('wysiwyg-toolbar-icon-enable', function() {
+                                if ($(this).hasClass('wysiwyg-always-enabled')) {
+                                    return;
+                                }
                                 if (button.hotkey) {
                                     hotkeysDisabled[button.hotkey] = false;
                                 }

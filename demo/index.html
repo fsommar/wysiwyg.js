@@ -329,13 +329,13 @@ $(document).ready(function() {
                     //showstatic: true,    // wanted on the toolbar
                     showselection: false    // wanted on selection
                 },
-                subscript: index == 1 ? false : {
+                subscript: index <= 1 ? false : {
                     title: 'Subscript',
                     image: '\uf12c', // <img src="path/to/image.png" width="16" height="16" alt="" />
                     //showstatic: true,    // wanted on the toolbar
                     showselection: true    // wanted on selection
                 },
-                superscript: index == 1 ? false : {
+                superscript: index <= 1 ? false : {
                     title: 'Superscript',
                     image: '\uf12b', // <img src="path/to/image.png" width="16" height="16" alt="" />
                     //showstatic: true,    // wanted on the toolbar
@@ -364,6 +364,10 @@ $(document).ready(function() {
                     image: '\uf0ca', // <img src="path/to/image.png" width="16" height="16" alt="" />
                     //showstatic: true,    // wanted on the toolbar
                     showselection: false    // wanted on selection
+                },
+                code: {
+                    title: 'Show/hide code',
+                    image: '\uf121'
                 },
                 removeformat: {
                     title: 'Remove format',
@@ -728,7 +732,8 @@ $(element).wysiwyg({
         outdent: { ... },
         orderedList: { ... },
         unorderedList: { ... },
-        removeformat: { ... }
+        removeformat: { ... },
+        code: { ... }
     },
     submit: { ... },
     selectImage: 'Click or drop image',
