@@ -1775,7 +1775,8 @@
                             // Update textarea to be of same dimensions as contenteditable (wysiwyg).
                             $textarea.height($wysiwyg.height())
                                 .width($wysiwyg.width())
-                                .css('max-width', $wysiwyg.width());
+                                .css('max-width', $wysiwyg.width())
+                                .css('min-width', $wysiwyg.width());
                             // Trigger a focus and blur events without actually focusing or blurring the element.
                             $textarea.on('focus', function() { $wysiwyg.triggerHandler('focus'); });
                             $textarea.on('blur', function() { $wysiwyg.triggerHandler('blur'); });
