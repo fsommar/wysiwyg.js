@@ -1814,7 +1814,7 @@
                                 $(this).addClass('wysiwyg-toolbar-icon-disabled');
                             })
                             .on('wysiwyg-toolbar-icon-enable', function() {
-                                if ($(this).hasClass('wysiwyg-always-enabled')) {
+                                if ($(this).hasClass('wysiwyg-always-disabled')) {
                                     return;
                                 }
                                 if (button.hotkey) {
