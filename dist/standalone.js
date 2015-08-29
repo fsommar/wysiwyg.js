@@ -1392,7 +1392,7 @@
     // Create the Editor
     var create_editor = function( $textarea, classes, placeholder, toolbar_position, toolbar_buttons, toolbar_submit, label_selectImage,
                                   placeholder_url, placeholder_embed, max_imagesize, on_imageupload, force_imageupload, video_from_url,
-                                  on_keydown, on_keypress, on_keyup, on_autocomplete )
+                                  on_keydown, on_keypress, on_keyup, on_autocomplete, disabled_button_title, on_disabled_button_click )
     {
         // Content: Insert link
         var wysiwygeditor_insertLink = function( wysiwygeditor, url )
@@ -1799,13 +1799,13 @@
 
         // Create the toolbar
         var toolbar_button = function( button ) {
-            return $('<a/>').addClass( 'wysiwyg-toolbar-icon ' + (button.classes || '') )
-                            .attr('href','#')
-                            .attr('title', button.title)
-                            .attr('unselectable','on')
+            return $('<a/>').addClass('wysiwyg-toolbar-icon ' + (button.classes || ''))
+                            .attr('href', '#')
+                            .attr('title', button.disabled ? disabled_button_title : button.title)
+                            .attr('unselectable', 'on')
                             .append(button.image)
                             .on('wysiwyg-toolbar-icon-disable', function() {
-                                if ($(this).hasClass('wysiwyg-always-enabled')) {
+                                if ($(this).hasClass('wysiwyg-always-enabled') || button.disabled) {
                                     return;
                                 }
                                 if (button.hotkey) {
@@ -1814,7 +1814,7 @@
                                 $(this).addClass('wysiwyg-toolbar-icon-disabled');
                             })
                             .on('wysiwyg-toolbar-icon-enable', function() {
-                                if ($(this).hasClass('wysiwyg-always-disabled')) {
+                                if (button.disabled) {
                                     return;
                                 }
                                 if (button.hotkey) {
@@ -1823,7 +1823,17 @@
                                 $(this).removeClass('wysiwyg-toolbar-icon-disabled');
                             })
                             // Disable dragging (as in drag and drop) of buttons.
-                            .on('dragstart', function() { return false; });
+                            .on('dragstart', function() { return false; })
+                            .addClass(button.disabled ? 'wysiwyg-toolbar-icon-disabled' : '')
+                            .click(function (e) {
+                                if (button.disabled) {
+                                    // Prevent click events from firing on disabled buttons
+                                    e.stopImmediatePropagation();
+                                    return false;
+                                } else if ($(this).hasClass('wysiwyg-toolbar-icon-disabled')) {
+                                    on_disabled_button_click($(this), button);
+                                }
+                            });
         };
         var add_buttons_to_toolbar = function( $toolbar, selection, popup_open_callback, popup_position_callback )
         {
@@ -2261,12 +2271,14 @@
                     on_keydown = option.onKeyDown || null,
                     on_keypress = option.onKeyPress || null,
                     on_keyup = option.onKeyUp || null,
-                    on_autocomplete = option.onAutocomplete || null;
+                    on_autocomplete = option.onAutocomplete || null,
+                    disabled_button_title = option.disabledButtonTitle || '',
+                    on_disabled_button_click = option.onDisabledButtonClick || function () {};
 
                 // Create the WYSIWYG Editor
                 var data = create_editor( $that, classes, placeholder, toolbar_position, toolbar_buttons, toolbar_submit, label_selectImage,
                                           placeholder_url, placeholder_embed, max_imagesize, on_imageupload, force_imageupload, video_from_url,
-                                          on_keydown, on_keypress, on_keyup, on_autocomplete );
+                                          on_keydown, on_keypress, on_keyup, on_autocomplete, disabled_button_title, on_disabled_button_click );
                 $that.data( 'wysiwyg', data );
             });
         }

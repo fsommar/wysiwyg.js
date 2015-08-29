@@ -44,6 +44,8 @@ $(document).ready(function() {
                 // Smiley plugin
                 smilies: {
                     title: 'Smilies',
+                    classes: 'wysiwyg-smiley',
+                    disabled: index == 0,
                     image: '\uf118', // <img src="path/to/image.png" width="16" height="16" alt="" />
                     popup: function( $popup, $button ) {
                             var list_smilies = [
@@ -508,6 +510,10 @@ $(document).ready(function() {
                     return '<iframe src="//www.dailymotion.com/embed/video/' + dailymotion_match[1] + '" width="640" height="360" frameborder="0" webkitAllowFullScreen mozallowfullscreen allowFullScreen></iframe>';
 
                 // undefined -> create '<video/>' tag
+            },
+            disabledButtonTitle: 'This button is unavailable',
+            onDisabledButtonClick: function() {
+                console.log('A disabled button was pressed.');
             }
         })
         .change(function() {
@@ -523,6 +529,8 @@ $(document).ready(function() {
                 ;//console.log( 'blur' );
         });
     });
+
+    $('.wysiwyg-smiley').trigger('wysiwyg-toolbar-icon-disable');
 
     // Demo-Buttons
     $('#editor3-readonly').click(function() {
