@@ -416,7 +416,7 @@
                         wysiwygeditor.removeFormat().closePopup().collapseSelection();
                     };
                 case 'code':
-                    if (!button.classes) {
+                    if (button && !button.classes) {
                         button.classes = '';
                     }
                     button.classes += ' wysiwyg-code-button wysiwyg-always-enabled';
