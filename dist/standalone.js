@@ -1752,10 +1752,12 @@
                         wysiwygeditor.removeFormat().closePopup().collapseSelection();
                     };
                 case 'code':
-                    if (button && !button.classes) {
-                        button.classes = '';
+                    if (button) {
+                        if (!button.classes) {
+                            button.classes = '';
+                        }
+                        button.classes += ' wysiwyg-code-button wysiwyg-always-enabled';
                     }
-                    button.classes += ' wysiwyg-code-button wysiwyg-always-enabled';
                     var $wysiwyg = $(wysiwygeditor.getElement());
                     $textarea.addClass('wysiwyg-editor');
                     return function(target) {

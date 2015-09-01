@@ -43,6 +43,7 @@
     /*max-height: 25em;*/
     padding: 10px;
     overflow: auto;
+    border-style: none;
     outline: none;
     -ms-word-wrap: break-word;
     word-wrap: break-word;
