@@ -1657,7 +1657,7 @@
         };
 
         // Handlers
-        var get_toolbar_handler = function( name, popup_callback )
+        var get_toolbar_handler = function( name, button, popup_callback )
         {
             switch( name )
             {
@@ -1752,6 +1752,10 @@
                         wysiwygeditor.removeFormat().closePopup().collapseSelection();
                     };
                 case 'code':
+                    if (!button.classes) {
+                        button.classes = '';
+                    }
+                    button.classes += ' wysiwyg-code-button';
                     var $wysiwyg = $(wysiwygeditor.getElement());
                     $textarea.addClass('wysiwyg-editor');
                     return function(target) {
@@ -1859,7 +1863,7 @@
                         popup_position_callback( $popup, target, overwrite_offset );
                     };
                 else
-                    toolbar_handler = get_toolbar_handler( key, function( $content, target ) {
+                    toolbar_handler = get_toolbar_handler( key, value, function( $content, target ) {
                         var $popup = popup_open_callback();
                         $popup.append( $content );
                         popup_position_callback( $popup, target );
@@ -1888,50 +1892,34 @@
                     $toolbar.append( $button );
             });
         };
-        var popup_position = function( $popup, $container, left, top )  // left+top relative to $container
-        {
-            // Test parents
-            var container_node = $container.get(0),
-                offsetparent = container_node.offsetParent,
-                offsetparent_offset = { left: 0, top: 0 },  //$.offset() does not work with Safari 3 and 'position:fixed'
-                offsetparent_fixed = false,
-                offsetparent_overflow = false,
-                popup_width = $popup.width(),
-                node = offsetparent;
-            while( node )
-            {
-                offsetparent_offset.left += node.offsetLeft;
-                offsetparent_offset.top += node.offsetTop;
-                var $node = $(node);
-                if( $node.css('position') == 'fixed' )
-                    offsetparent_fixed = true;
-                if( $node.css('overflow') != 'visible' )
-                    offsetparent_overflow = true;
-                node = node.offsetParent;
-            }
+        // left+top relative to $container
+        var popup_position = function($popup, $container, left, top) {
+            var popup_width = $popup.width();
+            var $offsetparent = $container.offsetParent() || $(document.body);
             // Move $popup as high as possible in the DOM tree: offsetParent of $container
-            var $offsetparent = $(offsetparent || document.body);
-            $offsetparent.append( $popup );
-            left += container_node.offsetLeft; // $container.position() does not work with Safari 3
-            top += container_node.offsetTop;
+            $offsetparent.append($popup);
+            left += $container.offset().left;
+            top += $container.offset().top;
             // Trim to offset-parent
-            if( offsetparent_fixed || offsetparent_overflow )
-            {
-                if( left + popup_width > $offsetparent.width() - 1 )
-                    left = $offsetparent.width() - popup_width - 1;
-                if( left < 1 )
-                    left = 1;
+            if (left > $offsetparent.width() - popup_width - 1) {
+                left = $offsetparent.width() - popup_width - 1;
+            }
+            if (left < 1) {
+                left = 1;
             }
             // Trim to viewport
             var viewport_width = $(window).width();
-            if( offsetparent_offset.left + left + popup_width > viewport_width - 1 )
-                left = viewport_width - offsetparent_offset.left - popup_width - 1;
-            var scroll_left = offsetparent_fixed ? 0 : $(window).scrollLeft();
-            if( offsetparent_offset.left + left < scroll_left + 1 )
-                left = scroll_left - offsetparent_offset.left + 1;
+            if (left > viewport_width - $offsetparent.offset().left - popup_width - 1) {
+                left = viewport_width - $offsetparent.offset().left - popup_width - 1;
+            }
+            if (left < $(window).scrollLeft() - $offsetparent.offset().left + 1) {
+                left = $(window).scrollLeft() - $offsetparent.offset().left + 1;
+            }
             // Set offset
-            $popup.css({ left: parseInt(left) + 'px',
-                         top: parseInt(top) + 'px' });
+            $popup.offset({
+                left: parseInt(left),
+                top: parseInt(top)
+            });
         };
 
 

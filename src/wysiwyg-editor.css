@@ -215,3 +215,9 @@
 .wysiwyg-embedcode {
     margin-bottom: 10px;
 }
+.wysiwyg-code-mode .wysiwyg-code-button {
+    color: #F03;
+}
+.wysiwyg-code-button {
+    color: inherit;
+}
